@@ -1,0 +1,17 @@
+{
+  "name": "denz-lib",
+  "version": "0.0.2",
+  "description": "This is a test library for education purposes",
+  "author": {
+    "name": "KS",
+    "email": "alex.broad@mail.ru"
+  },
+  "peerDependencies": {
+    "@angular/common": "^15.1.0",
+    "@angular/core": "^15.1.0"
+  },
+  "dependencies": {
+    "tslib": "^2.3.0"
+  },
+  "sideEffects": false
+}

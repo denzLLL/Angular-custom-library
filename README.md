@@ -1,27 +1,171 @@
-# MyFirstLibrary
+# Создаем библиотеку под Angular, публикуем в npm (verdaccio, public npm)
 
-This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 15.1.2.
 
-## Development server
+## Устанавливаем библиотеку
 
-Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The application will automatically reload if you change any of the source files.
+В папке проекта выполним команду на создание библиотеки:
 
-## Code scaffolding
+> ng generate library my-lib
 
-Run `ng generate component component-name` to generate a new component. You can also use `ng generate directive|pipe|service|class|guard|interface|enum|module`.
+my-lib - название библ-ки
 
-## Build
+Появится папка ```projects``` с ```my-lib```
 
-Run `ng build` to build the project. The build artifacts will be stored in the `dist/` directory.
 
-## Running unit tests
+## Начинаем использовать библиотеку
 
-Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.io).
+```\projects\my-lib\src\public-api.ts``` - определяет, что доступно потребителям библиотеки.
 
-## Running end-to-end tests
+В ```tsconfig.json``` мы автоматом увидим (см. ниже) - алиас** к my-lib и путь к скомпилированным файлам*. 
 
-Run `ng e2e` to execute the end-to-end tests via a platform of your choice. To use this command, you need to first add a package that implements end-to-end testing capabilities.
+```
+"paths": {
+    "my-lib": [
+        "dist/my-lib"
+    ]
+},
+```
 
-## Further help
 
-To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI Overview and Command Reference](https://angular.io/cli) page.
+Чтобы собрать нашу библиотеку*:
+```
+ng build my-lib
+```
+
+Используем в проекте (подключаем в AppModule):
+
+```
+import {MyLibModule} from 'my-lib'; // доступ через алиас**
+
+@NgModule({
+    imports: [
+        MyLibModule
+    ],
+})
+export class AppModule {
+}
+
+```
+
+Далее мы можем использовать компоненты библ-ки (app.component.html):
+```
+<lib-my-lib></lib-my-lib>
+```
+
+### Подхватываем изменения на лету
+```
+ng build my-lib --watch
+```
+
+В нашем примере необходимо выполнить команды:
+> npm run w \
+> npm run start
+
+
+## Используем  библиотеку в Mono-Repo и в Different Workspaces
+
+### в Mono-Repo
+Создадим приложение users в нашем приложении 
+(команду запустим в \my-first-library\ и приложение ```users``` будет добавлено в папку projects):
+>  ng g application users
+
+Запустим users:
+ng serve users --port 4201
+
+Подключим также MyLibModule в приложении users
+Монорепозиторий имеет один и тот же репозиторий, со структурой, кот мы реализовали выше:
+в папке projects мы имеем подпапки с библиотекой my-lib и прилож users
+
+### в Different Workspaces 
+
+Указываем правильный путь в:
+```
+"paths": {
+    "@angular/*"  : ["./node_modules/@angular/*"],
+    "my-lib": ["../client1/dist/my-lib"]
+},
+```
+
+## Приватный NPM пакет используя Verdaccio (polyrepo)
+
+Первый путь расшарить библ это npm registry.
+Второй путь это ```Verdaccio``` - private npm proxy registry
+
+> npm i verdaccio -g
+> verdaccio --help
+
+1. Стартуем сервер (http://localhost:4873/) verdaccio:
+> verdaccio
+
+2. Далее выполним команды предоставленные сервером. Добавим юзера:
+> npm adduser --registry http://localhost:4873/
+
+3. Проверим, что мы залогинены:
+> npm whoami --registry http://localhost:4873/
+
+4. Подготовим библиотеку:
+>  ng build my-lib
+
+5. Далее в папке (```my-first-library\dist\my-lib```) выполним команду, кот опубликует библиотеку:
+> npm publish --registry http://localhost:4873/
+
+6. Далее по пути ```http://localhost:4873/``` вы найдете свою библ-ку, с инстр-й по установке и т.д.
+
+7. Чтобы установить эту библиотеку (в стороннем проекте) через private npm proxy registry, создадим файл ```.npmrc```
+со следующим содержимым:
+> registry=http://localhost:4873
+
+8. И установим нашу библ-ку:
+> npm install denz-lib
+
+9. Используем в проекте.
+
+
+## Публикация в публичном NPM 
+
+Залогинимся в npm (в терминале):
+> npm add user
+
+Чтобы удостовериться, что вы залогинены:
+> npm whoami
+
+4. Подготовим библиотеку:
+>  ng build my-lib
+
+5. Публикуем
+> cd dist/my-lib
+> npm publish
+
+
+За деталями можно пойти на сайт npm - https://www.npmjs.com :
+> npm -> packages
+
+### Unpublish
+Конкретной версии:
+> npm unpublish denz-lib@0.0.2
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
